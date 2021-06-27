@@ -19,10 +19,27 @@ export default {
       default: 'v-dialog__content'
     }
   },
+  watch: {
+    modelValue(val) {
+      if(val) {
+        document.addEventListener('keydown', this.keyDown)
+      } else {
+        document.removeEventListener('keydown', this.keyDown)
+      }
+    }
+  },
   methods: {
     close() {
       this.$emit('update:modelValue', false)
+    },
+    keyDown(e) {
+      if(e.key === 'Escape') {
+        this.close()
+      }
     }
+  },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.keyDown)
   }
 }
 </script>

@@ -35,23 +35,7 @@
 </svg>
         </button>
       </form>
-      <table class="w-full">
-        <thead>
-        <tr>
-          <th class="text-left">Id</th>
-          <th class="text-left">Name</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr
-          v-for="item in filteredRoles"
-          :key="item.id"
-          class="hover:bg-gray-10 rounded-xl transition">
-          <td class="p-2">{{ item.id }}</td>
-          <td class="p-2">{{ item.name }}</td>
-        </tr>
-        </tbody>
-      </table>
+      <RoleTable :roles="filteredRoles"></RoleTable>
       <ul class="flex justify-end mt-8 select-none">
         <li
           @click="changePage(item)"
@@ -71,13 +55,15 @@
       </ul>
     </div>
   </div>
-
 </template>
 
 <script>
+import RoleTable from "../components/RoleTable.vue";
+
 import {GET_ROLES} from "../fakeApi";
 
 export default {
+  name: 'Role',
   data() {
     return {
       query: '',
@@ -101,7 +87,7 @@ export default {
     async getRoles() {
       this.loading = true
       try {
-       const {data, total_pages} = await GET_ROLES({delay: 300})
+        const {data, total_pages} = await GET_ROLES({delay: 300})
         this.roles = data
         this.lastPage = total_pages
       } catch (e) {
@@ -111,6 +97,9 @@ export default {
       }
     },
   },
+  components: {
+    RoleTable
+  },
   computed: {
     filteredRoles() {
       return this.roles.filter(item => {
@@ -119,7 +108,7 @@ export default {
     }
   },
   created() {
-    if(this.$route.query.page) {
+    if (this.$route.query.page) {
       this.params.page = +this.$route.query.page
     }
     this.getRoles()

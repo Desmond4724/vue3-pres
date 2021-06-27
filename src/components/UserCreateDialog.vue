@@ -66,14 +66,22 @@
 
 <script>
 import VDialog from "./ui/VDialog.vue";
-import {CreateUser} from "../fakeApi";
+import {CreateUser, GET_ROLES} from "../fakeApi";
 import UserRoleSelect from "./UserRoleSelect.vue";
+import useApi from "../use/useApi";
+import {onMounted, reactive} from "vue";
 
 export default {
   name: 'UserCreateDialog',
-  props: {
-    roles: {
-      type: Array
+  setup() {
+    const {callApi: getRoles, result: roles} = useApi(async () => {
+      const {data, total_pages} = await GET_ROLES({})
+      return {data, pages: total_pages}
+    }, [])
+    onMounted(getRoles)
+    return {
+      getRoles,
+      roles
     }
   },
   emits: ['ADDED_NEW_USER'],

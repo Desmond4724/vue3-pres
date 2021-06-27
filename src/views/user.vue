@@ -65,12 +65,9 @@
   </div>
 
   <UserCreateDialog
-    :roles="roles"
     @ADDED_NEW_USER="user => users.push(user)"
     ref="userDialog"
-  >
-
-  </UserCreateDialog>
+  />
 
 </template>
 
@@ -78,49 +75,46 @@
 import UserCreateDialog from "../components/UserCreateDialog.vue";
 import UserTable from "../components/UserTable.vue";
 import {http} from "../repositories/api/axios";
-import {GET_ROLES} from "../fakeApi";
+import useApi from "../use/useApi";
+import {reactive, onMounted} from 'vue'
 
 export default {
+  setup() {
+    const params = reactive({
+      page: 1,
+      query: null
+    })
+    const getUserList = async () => {
+      const {data: {data, total_pages}} = await http.get('/users', {
+        params: {
+          ...params,
+          delay: 1
+        }
+      })
+      return {data, pages: total_pages}
+    }
+    const {callApi: getUsers, result: users, error, loading, lastPage} = useApi(getUserList, [])
+
+    onMounted(getUsers)
+    return {
+      lastPage,
+      params,
+      users,
+      getUsers,
+      loading,
+      error,
+    }
+  },
   data() {
     return {
-      error: false,
-      loading: false,
-      roles: [],
-      users: [],
       query: '',
-      lastPage: 0,
-      params: {
-        page: 1
-      }
     }
   },
   methods: {
-    async getUsers() {
-      this.loading = true
-      try {
-        const {data: {data, total_pages}} = await http.get('/users', {
-          params: {
-            ...this.params,
-            delay: 1
-          }
-        })
-        this.users = data
-        this.lastPage = total_pages
-      } catch (e) {
-        this.error = true
-      } finally {
-        this.loading = false
-      }
-
-    },
-    async getRoles() {
-      const {data} = await GET_ROLES({})
-      this.roles = data
-    },
     changePage(i) {
       if (this.params.page !== i) {
-        this.$router.push({query: {page: i}})
         this.params.page = i
+        this.$router.push({query: {page: i}})
         this.getUsers()
       }
     },
@@ -130,8 +124,6 @@ export default {
     if (this.$route.query.page) {
       this.params.page = +this.$route.query.page
     }
-    this.getUsers()
-    this.getRoles()
   }
 }
 </script>

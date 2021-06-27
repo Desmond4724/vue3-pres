@@ -61,51 +61,49 @@
 import RoleTable from "../components/RoleTable.vue";
 
 import {GET_ROLES} from "../fakeApi";
+import useApi from "../use/useApi";
+import {onMounted, reactive, watch} from "vue";
+import useRoleSearch from "../use/useRoleNameSearch";
 
 export default {
   name: 'Role',
-  data() {
+  setup() {
+    const params = reactive({
+      page: 1
+    })
+    const {callApi: getRoles, result: roles, loading, error, lastPage} = useApi(async () => {
+      const {data, total_pages} = await GET_ROLES({delay: 300})
+      return {data, pages: total_pages}
+    }, [])
+    const {filteredRoles, query} = useRoleSearch(roles)
+
+    onMounted(getRoles)
+    watch(params, getRoles)
+
     return {
-      query: '',
-      loading: true,
-      roles: [],
-      lastPage: 0,
-      error: false,
-      params: {
-        page: 1
-      }
+      getRoles,
+      roles,
+      loading,
+      filteredRoles,
+      query,
+      error,
+      lastPage,
+      params
     }
+  },
+  data() {
+    return {}
   },
   methods: {
     changePage(i) {
       if (this.params.page !== i) {
         this.$router.push({query: {page: i}})
         this.params.page = i
-        this.getRoles()
-      }
-    },
-    async getRoles() {
-      this.loading = true
-      try {
-        const {data, total_pages} = await GET_ROLES({delay: 300})
-        this.roles = data
-        this.lastPage = total_pages
-      } catch (e) {
-        this.error = true
-      } finally {
-        this.loading = false
       }
     },
   },
   components: {
     RoleTable
-  },
-  computed: {
-    filteredRoles() {
-      return this.roles.filter(item => {
-        return !this.query || item.name.toLowerCase().indexOf(this.query) > -1
-      })
-    }
   },
   created() {
     if (this.$route.query.page) {

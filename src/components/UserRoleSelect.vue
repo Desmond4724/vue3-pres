@@ -21,7 +21,7 @@
 
           <svg class="absolute right-3 top-3.5" v-if="role.id === modelValue" fill="currentColor"
                xmlns="http://www.w3.org/2000/svg" width="12" height="12" x="0" y="0"
-               viewBox="0 0 407.51 407.51" style="enable-background:new 0 0 407.51 407.51;" xml:space="preserve">
+               viewBox="0 0 407.51 407.51" xml:space="preserve">
 		<path d="M397.061,161.959h-26.122c-15.452-61.734-63.654-109.936-125.388-125.388V10.449C245.551,4.678,240.873,0,235.102,0
 			h-62.694c-5.771,0-10.449,4.678-10.449,10.449v26.122C100.343,52.23,52.23,100.343,36.571,161.959H10.449
 			C4.678,161.959,0,166.637,0,172.408v62.694c0,5.771,4.678,10.449,10.449,10.449h26.122
@@ -44,6 +44,9 @@
 
 
 <script>
+import useRoleSearch from "../use/useRoleNameSearch";
+import {toRefs} from 'vue'
+
 export default {
   name: "UserRoleSelect",
   props: {
@@ -52,16 +55,15 @@ export default {
       type: Array
     }
   },
-  data() {
+  setup(props) {
+    const roles = toRefs(JSON.parse(JSON.stringify(props.roles)))
+    console.log(roles);
+    console.log(roles[0].value);
+    debugger
+    const {query, filteredRoles} = useRoleSearch(toRefs(roles))
     return {
-      query: ''
-    }
-  },
-  computed: {
-    filteredRoles() {
-      return this.roles.filter(item => {
-        return !this.query || item.id === this.modelValue || item.name.toLowerCase().indexOf(this.query.toLowerCase()) > -1
-      })
+      filteredRoles,
+      query
     }
   },
   methods: {
